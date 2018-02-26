@@ -31,7 +31,7 @@ def Modules(modules, bodies, forces):
         body.a = body.f/body.m
         body.v = body.v + body.a * dt
         body.pos = body.pos + body.v * dt
-        
+
 
 def gravity(bodies, forces):
     for actee in bodies:
@@ -54,4 +54,3 @@ modules = [gravity]
 while True:
     rate(100)
     Modules(modules,bodies,forces)
-    
