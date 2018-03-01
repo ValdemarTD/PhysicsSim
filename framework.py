@@ -25,7 +25,9 @@ def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
         if joint_type == "rigid":
             body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = k, radius = .2, jlength = mag(length), elas = elas)
-            joints.append(body)
+        elif joint_type == "rope":
+            body = cylinder(axis = length, jtype = joint_type, bodies = [body1, body2], k = k, radius = .2, jlength = mag(length), elas = elas)
+        joints.append(body)
         body.pos = body1.pos
         return(body)
 
@@ -50,7 +52,11 @@ def jointmod(bodies, forces, joints):
         body2 = joint.bodies[1]
         joint.pos = body1.pos
         joint.axis = body2.pos - body1.pos
-        jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis) * (joint.elas)
+        if joint.axis < joint.jlength and joint.joint_type == "rope":
+            jforce = vector(0,0,0)
+            print("Rope")
+        else:
+            jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis) * (joint.elas)
         forces[body1.label] = forces[body1.label] + jforce
         forces[body2.label] = forces[body2.label] - jforce
     return(forces)
