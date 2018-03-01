@@ -21,16 +21,16 @@ for body in bodies:
     forces[body.label] = body.f
     i = i + 1
 
-def Joint(body1, body2, joints, joint_type, k):
+def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
         if joint_type == "rigid":
-            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = 10000000000000*k, radius = .2, jlength = mag(length))
+            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = k, radius = .2, jlength = mag(length), elas = elas)
             joints.append(body)
         body.pos = body1.pos
         return(body)
 
-mainjoint = Joint(cube, rect, joints, "rigid", 100000)
-balljoint = Joint(cube, ball, joints, "rigid", 100000)
+mainjoint = Joint(cube, rect, joints, "rigid", 1000000000000000, 1)
+balljoint = Joint(cube, ball, joints, "rigid", 1000000000000000, 1)
 
 def Modules(modules, bodies, forces, joints):
     for body in bodies:
@@ -50,7 +50,7 @@ def jointmod(bodies, forces, joints):
         body2 = joint.bodies[1]
         joint.pos = body1.pos
         joint.axis = body2.pos - body1.pos
-        jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis)
+        jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis) * (joint.elas)
         forces[body1.label] = forces[body1.label] + jforce
         forces[body2.label] = forces[body2.label] - jforce
     return(forces)
