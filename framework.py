@@ -21,30 +21,41 @@ for body in bodies:
     forces[body.label] = body.f
     i = i + 1
 
-def Joint(body1, body2, joints, joint_type, k):        
-        length = (body1.pos - body2.pos)
+def Joint(body1, body2, joints, joint_type, k):
+        length = (body2.pos - body1.pos)
         if joint_type == "rigid":
-            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = k)
+            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = 10000000000000*k, radius = .2, jlength = mag(length))
             joints.append(body)
+        body.pos = body1.pos
         return(body)
-mainjoint = Joint(cube, rect, joints, "rigid", 10000)
 
-def Modules(modules, bodies, forces):
+mainjoint = Joint(cube, rect, joints, "rigid", 100000)
+balljoint = Joint(cube, ball, joints, "rigid", 100000)
+
+def Modules(modules, bodies, forces, joints):
     for body in bodies:
         body.f = vector(0,0,0)
         forces[body.label] = body.f
     for module in modules:
-        forces = module(bodies, forces)
+        forces = module(bodies, forces, joints)
     for body in bodies:
         body.f = forces[body.label]
         body.a = body.f/body.m
         body.v = body.v + body.a * dt
         body.pos = body.pos + body.v * dt
 
-#def joints(bodies, forces, joints):
-    
+def jointmod(bodies, forces, joints):
+    for joint in joints:
+        body1 = joint.bodies[0]
+        body2 = joint.bodies[1]
+        joint.pos = body1.pos
+        joint.axis = body2.pos - body1.pos
+        jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis)
+        forces[body1.label] = forces[body1.label] + jforce
+        forces[body2.label] = forces[body2.label] - jforce
+    return(forces)
 
-def gravity(bodies, forces):
+def gravity(bodies, forces, joints):
     for actee in bodies:
         #Selects object causing action
         for actor in bodies:
@@ -59,10 +70,9 @@ def gravity(bodies, forces):
                 forces[actor.label] = forces[actor.label] + f
     return(forces)
 
-modules = [gravity]
+modules = [gravity,jointmod]
 
 
 while True:
     rate(100)
-    Modules(modules,bodies,forces)
-    
+    Modules(modules,bodies,forces,joints)
