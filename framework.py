@@ -12,6 +12,7 @@ cube = box(a = vector(0,0,0), v = vector(0,15,0), pos = vector(0,0,0), m = 5e12,
 rect = box(a = vector(0,0,0), v = vector(0,0,20), pos = vector(0,3,0), m = 5e12, name = "rectangle")
 bodies = [ball,cube,rect]
 forces = []
+joints = []
 i = 0
 for body in bodies:
     body.label = i
@@ -19,6 +20,14 @@ for body in bodies:
     body.f = vector(0,0,0)
     forces[body.label] = body.f
     i = i + 1
+
+def Joint(body1, body2, joints, joint_type, k):        
+        length = (body1.pos - body2.pos)
+        if joint_type == "rigid":
+            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = k)
+            joints.append(body)
+        return(body)
+mainjoint = Joint(cube, rect, joints, "rigid", 10000)
 
 def Modules(modules, bodies, forces):
     for body in bodies:
@@ -32,6 +41,8 @@ def Modules(modules, bodies, forces):
         body.v = body.v + body.a * dt
         body.pos = body.pos + body.v * dt
 
+#def joints(bodies, forces, joints):
+    
 
 def gravity(bodies, forces):
     for actee in bodies:
@@ -54,3 +65,4 @@ modules = [gravity]
 while True:
     rate(100)
     Modules(modules,bodies,forces)
+    
