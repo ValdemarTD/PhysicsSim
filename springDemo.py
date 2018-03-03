@@ -5,12 +5,11 @@ g=6.67408e-11
 t = 0
 dt = .001
 
-universe = display(center = vector(0,7,0))
+universe = display()
 
-earth = sphere(m = 5.972e24, radius = 6.371e6, pos = vector(0,-6.371e6, 0), v = vector(0,0,0), a = vector(0,0,0), name = "earth", label = 0, color = color.blue)
-ball = sphere(m = 1, radius = .2, pos = vector(0,10,4), v = vector(0,0,0), a = vector(0,0,0), name = "ball", label = 0, color = color.red, make_trail = True)
+ball = sphere(m = 1, pos = vector(0,0,0),v = vector(0,0,6), a = vector(0,0,0), label = 0, name = "ball", radius = .8)
 
-bodies = [earth, ball]
+bodies = [ball]
 forces = []
 joints = []
 
@@ -27,7 +26,9 @@ def fixed(pos):
     body = sphere(radius = .1, color = color.black, pos = pos, fixed = "True")
     return(body)
 
-point = fixed(vector(0,10,0))
+p1 = fixed(vector(-4.33,-2.5,0))
+p2 = fixed(vector(4.33,-2.5,0))
+p3 = fixed(vector(0,5,0))
 
 def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
@@ -39,7 +40,13 @@ def Joint(body1, body2, joints, joint_type, k, elas):
         body.pos = body1.pos
         return(body)
 
-spring = Joint(ball, point, joints, "rope", 1000000, 1)
+j1 = Joint(p1, ball, joints, "rigid", 10, 1)
+j2 = Joint(p2, ball, joints, "rigid", 10, 1)
+j3 = Joint(p3, ball, joints, "rigid", 10, 1)
+
+for joint in joints:
+    joint.radius = .4
+    joint.jlength = 7
 
 def Modules(modules, bodies, forces, joints):
     for body in bodies:
