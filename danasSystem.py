@@ -5,7 +5,7 @@ g=6.67408e-11
 t = 0
 dt = 1
 
-universe = display(center = vector(0,7,0))
+universe = display(center = vector(0,0,0))
 
 #14064015000000000000000000 kg
 
@@ -20,13 +20,22 @@ universe = display(center = vector(0,7,0))
 #m3:13994600000000000000000
 
 
-planet = sphere(m = 14064015000000000000000000, radius = 8471000, pos = vector(0,0,0), v = vector(0,0,0), a = vector(0,0,0), label = 0, name = "planet") 
-moon1 = sphere(m = 1857040000000000000000000, radius = 5100000, pos = vector(385000000,0,0), v = vector(0,0,1500), a = vector(0,0,0), label = 0, name = "moon1", make_trail = True)
-moon2 = sphere( m = 
+planet = sphere(color=color.blue, m = 14064015000000000000000000, radius = 8471000, pos = vector(0,0,0), v = vector(0,0,0), a = vector(0,0,0), label = 0, name = "planet")
+moon1 = sphere(color=color.red, m = 1857040000000000000000000, radius = 5100000, pos = vector(385000000,0,0), v = vector(0,0,1500), a = vector(0,0,0), label = 0, name = "moon1", make_trail = True)
+moon2 = sphere(color=color.green, m = 7147600000000000000000, radius = 800000, pos = vector(40000000,0,0), v = vector(0,800,3900), a = vector(0,0,0), label = 0, name = "moon2", make_trail = True)
+moon3 = sphere(color=color.yellow, m = 13994600000000000000000, radius = 1000000, pos = vector(150000000,0,0), v = vector(0,0,2000), a = vector(0,0,0), label = 0, name = "moon3", make_trail = True)
+
+submoon1 = sphere(m = 500000000000000, radius = 230000, pos = vector(9000000,0,0) + moon1.pos, v = vector(0,3500,50) + moon1.v, a = vector(0,0,0), label = 0, name = "submoon1", make_trail = True)
+
+
+
 planet = planet
 moon1 = moon1
+moon2 = moon2
+moon3 = moon3
+submoon1 = submoon1
 
-bodies = [planet, moon1]
+bodies = [planet, moon1, moon2, moon3, submoon1]
 forces = []
 joints = []
 
@@ -104,3 +113,4 @@ modules = [gravity,jointmod]
 while True:
     rate(1000000)
     Modules(modules,bodies,forces,joints)
+    universe.center = vector(planet.radius + 500000,0,0) + planet.pos
