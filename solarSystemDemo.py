@@ -3,7 +3,7 @@ import numpy as np
 
 g=6.67408e-11
 t = 0
-dt = .001
+dt = 100
 
 universe = display()
 
@@ -115,3 +115,4 @@ modules = [gravity,jointmod]
 while True:
     rate(1000)
     Modules(modules,bodies,forces,joints)
+    universe.center = jupiter.pos
