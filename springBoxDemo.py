@@ -1,15 +1,25 @@
 from visual import *
 import numpy as np
+import time
 
 g=6.67408e-11
 t = 0
-dt = .001
+dt = .01
 
-universe = display(center = vector(0,7,0))
+count = 4
+
+universe = display(width = 1680, height = 1050, center = vector(1.5,1.5,1.5), range = count + 2)
 
 bodies = []
 forces = []
 joints = []
+
+
+for x in range(count):
+    for y in range(count):
+        for z in range(count):
+            body = sphere(pos = vector(x,y,z), v=vector(0,0,0), a=vector(0,0,0), m = 50, radius = .1, color = color.red)
+            bodies.append(body)
 
 i = 0
 for body in bodies:
@@ -19,10 +29,14 @@ for body in bodies:
     forces[body.label] = body.f
     i = i + 1
     body.fixed = False
+    body.name = i
+    if i == 16:
+        body.v = vector(.5,.5,-.5)
 
 def fixed(pos):
     body = sphere(radius = .1, color = color.black, pos = pos, fixed = "True")
     return(body)
+
 
 def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
@@ -33,6 +47,13 @@ def Joint(body1, body2, joints, joint_type, k, elas):
         joints.append(body)
         body.pos = body1.pos
         return(body)
+
+for body1 in bodies:
+    for body2 in bodies:
+        if abs(mag(body1.pos - body2.pos)) <= 1.2 and body1.label != body2.label:
+            j = Joint(body1, body2, joints, "rigid", 200000, 1)
+
+
 
 def Modules(modules, bodies, forces, joints):
     for body in bodies:
@@ -54,6 +75,7 @@ def jointmod(bodies, forces, joints):
         joint.axis = body2.pos - body1.pos
         if joint.axis < joint.jlength and joint.joint_type == "rope":
             jforce = vector(0,0,0)
+            print("Rope")
         else:
             jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis) * (joint.elas)
         if body1.fixed == False:
@@ -79,7 +101,6 @@ def gravity(bodies, forces, joints):
 
 modules = [gravity,jointmod]
 
-
 while True:
-    rate(1000)
+    rate(100)
     Modules(modules,bodies,forces,joints)

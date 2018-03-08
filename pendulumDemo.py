@@ -5,9 +5,14 @@ g=6.67408e-11
 t = 0
 dt = .001
 
-universe = display(center = vector(0,7,0))
+universe = display(center = vector(0,.5,0), background = (51/255/1.3, 102/255/1.3, 255/255/1.3))
 
-bodies = []
+earth = sphere(m = 5.972e24, radius = 6.371e6, pos = vector(0,-6.371e6, 0), v = vector(0,0,0), a = vector(0,0,0), name = "earth", label = 0, color = color.blue)
+ball = sphere(m = .091, radius = .05, pos = vector(0 , 1 - .2032 , .4572 ), v = vector(0,0,0), a = vector(0,0,0), name = "ball", label = 0, color = color.red, make_trail = True, duration = 3000)
+ball.trail_object.color = color.black
+
+
+bodies = [earth, ball]
 forces = []
 joints = []
 
@@ -24,6 +29,8 @@ def fixed(pos):
     body = sphere(radius = .1, color = color.black, pos = pos, fixed = "True")
     return(body)
 
+point = fixed(vector(0,1,0))
+
 def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
         if joint_type == "rigid":
@@ -33,6 +40,8 @@ def Joint(body1, body2, joints, joint_type, k, elas):
         joints.append(body)
         body.pos = body1.pos
         return(body)
+
+spring = Joint(ball, point, joints, "rope", 10000, 1)
 
 def Modules(modules, bodies, forces, joints):
     for body in bodies:
@@ -54,6 +63,7 @@ def jointmod(bodies, forces, joints):
         joint.axis = body2.pos - body1.pos
         if joint.axis < joint.jlength and joint.joint_type == "rope":
             jforce = vector(0,0,0)
+            print("Rope")
         else:
             jforce = (mag(joint.axis) - joint.jlength) * joint.k * joint.axis/mag(joint.axis) * (joint.elas)
         if body1.fixed == False:
@@ -79,7 +89,7 @@ def gravity(bodies, forces, joints):
 
 modules = [gravity,jointmod]
 
-
 while True:
     rate(1000)
+    t = t + dt
     Modules(modules,bodies,forces,joints)
