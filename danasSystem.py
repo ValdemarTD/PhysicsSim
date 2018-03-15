@@ -47,6 +47,7 @@ for body in bodies:
     forces[body.label] = body.f
     i = i + 1
     body.fixed = False
+    body.duration = 10
 
 def fixed(pos):
     body = sphere(radius = .1, color = color.black, pos = pos, fixed = "True")
