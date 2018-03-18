@@ -4,7 +4,9 @@ import time
 
 g=6.67408e-11
 t = 0
-dt = .001
+dt = .00001
+
+
 
 count = 2
 
@@ -18,8 +20,9 @@ joints = []
 for x in range(count):
     for y in range(count):
         for z in range(count):
-            body = sphere(pos = vector(x,y,z), v=vector(0,0,0), a=vector(0,0,0), m = 50, radius = .1, color = color.red)
+            body = sphere(pos = vector(x,y,z), v=vector(0,0,0), a=vector(0,0,0), m = 5e15, radius = .1, color = color.red)
             bodies.append(body)
+            print body
 
 i = 0
 for body in bodies:
@@ -30,6 +33,7 @@ for body in bodies:
     i = i + 1
     body.fixed = False
     body.name = i
+    print body.label
     if i == 4 or i == 2:
         body.v = vector(0,3,0)
 
@@ -41,9 +45,9 @@ def fixed(pos):
 def Joint(body1, body2, joints, joint_type, k, elas):
         length = (body2.pos - body1.pos)
         if joint_type == "rigid":
-            body = helix(axis = length, jtype = joint_type, bodies = [body1, body2], k = k, radius = .02, jlength = mag(length), elas = elas)
+            body = helix(axis = length, jtype = joint_type, body1 = body1, body2 = body2, k = k, radius = .02, jlength = mag(length), elas = elas)
         elif joint_type == "rope":
-            body = cylinder(axis = length, jtype = joint_type, bodies = [body1, body2], k = k, radius = .02, jlength = mag(length), elas = elas)
+            body = cylinder(axis = length, jtype = joint_type, body1 = body1, body2 = body2, k = k, radius = .02, jlength = mag(length), elas = elas)
         joints.append(body)
         body.pos = body1.pos
         return(body)
@@ -69,8 +73,8 @@ def Modules(modules, bodies, forces, joints):
 
 def jointmod(bodies, forces, joints):
     for joint in joints:
-        body1 = joint.bodies[0]
-        body2 = joint.bodies[1]
+        body1 = joint.body1
+        body2 = joint.body2
         joint.pos = body1.pos
         joint.axis = body2.pos - body1.pos
         if joint.axis < joint.jlength and joint.joint_type == "rope":
@@ -99,8 +103,60 @@ def gravity(bodies, forces, joints):
                 forces[actor.label] = forces[actor.label] + f
     return(forces)
 
-modules = [jointmod]
+def energyInit(bodies, forces, joints):
+    for body in bodies:
+        body.PE = 0
+        body.KE = .5 * body.m * mag(body.v) ** 2
+        for joint in joints:
+            if joint.body1 == body or joint.body2 == body:
+                body.PE = body.PE + (mag(joint.axis) - joint.jlength) * joint.k * joint.elas
+        for actor in bodies:
+            if body.label != actor.label:
+                body.PE = body.PE + abs(g * actor.m / mag(body.pos - actor.pos))
+        body.EMax = body.KE + body.PE
 
+
+def energyConserv(bodies, forces, joints):
+    for body in bodies:
+        print body.name
+        body.PE = 0
+        body.KE = .5 * body.m * mag(body.v) ** 2
+        for joint in joints:
+            if joint.body1 == body or joint.body2 == body:
+                body.PE = body.PE + (mag(joint.axis) - joint.jlength) * joint.k * joint.elas
+        for actor in bodies:
+            if body.label != actor.label:
+                body.PE = body.PE + abs(g * actor.m / mag(body.pos - actor.pos))
+        body.ETot = body.KE + body.PE
+        if t <= 0:
+            body.EMax = body.ETot
+        if body.ETot > body.EMax:
+            reduction = (sqrt(2*(body.ETot - body.EMax)/body.m) * norm(body.v))
+            body.v = body.v - reduction
+            print("Overflow")
+            print(body.ETot - body.EMax)
+            print body.label
+            print body.ETot
+            print body.EMax
+            print reduction
+            print (mag(reduction) ** 2 * body.m / 2)
+        return(forces)
+
+#List of all modules used. Any module not included on this list will not be included in calculations
+
+modules = [gravity, jointmod, energyConserv]
+
+#initialization = []
+
+#def startup(bodies = bodies, forces = forces, joints = joints, initialization = initialization):
+#    for module in initialization:
+#        module(bodies, forces, joints)
+
+#Sets up start conditions and maxes
+#startup()
+
+#Main loop
 while True:
     rate(1/dt)
     Modules(modules,bodies,forces,joints)
+    t = t + dt

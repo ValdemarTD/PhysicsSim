@@ -26,6 +26,7 @@ for body in bodies:
     forces[body.label] = body.f
     i = i + 1
     body.fixed = False
+    body.oscilator = vector(0,0,0)
 
 #Allows for the creation of non-interacting objects
 def fixed(pos):
@@ -52,8 +53,14 @@ def Joint(body1, body2, joints, joint_type, k, elas):
 #If set to 1, no energy is lost. If set to 0, all energy is lost to heat.
 
 
-#Define main module's loop. Probably won't ever need changing. 
-def Modules(modules, bodies, forces, joints):
+def Oscilator(body, freq = 1, amplitude = 1, vector = vector(1,0,0)):
+    body.freq = freq
+    body.amplitude = amplitude
+    body.oscvector = vector
+    body.oscilator = amplitude * vector * sin(t*freq*2*pi)
+
+#Define main module's loop. Probably won't ever need changing.
+def Modules(modules = modules, bodies = bodies, forces = forces, joints = joints):
 #Resets all forces for re-calculation
     for body in bodies:
         body.f = vector(0,0,0)
@@ -102,9 +109,45 @@ def gravity(bodies, forces, joints):
                 forces[actor.label] = forces[actor.label] + f
     return(forces)
 
-#List of all modules used. Any module not included on this list will not be included in calculations
-modules = [gravity,jointmod]
+def energyInit(bodies, forces, joints):
+    for body in bodies:
+        body.KE = .5 * body.m * mag(body.v) ** 2
+        for joint in joints:
+            if joint.body1 == body or joint.body2 == body:
+                body.PE = body.PE + (mag(joint.axis) - joint.jlength) * joint.k * joint.elas
+        for actor in bodies:
+            body.PE = body.PE + abs(g * actor.m / mag(body.pos - actor.pos))
+        body.EMax = body.KE + body.PE
 
+
+def energyConserv(bodies, forces, joints):
+    for body in bodies:
+        body.KE = .5 * body.m * mag(body.v) ** 2
+        for joint in joints:
+            if joint.body1 == body or joint.body2 == body:
+                body.PE = body.PE + (mag(joint.axis) - joint.jlength) * joint.k * joint.elas
+        for actor in bodies:
+            body.PE = body.PE + abs(g * actor.m / mag(body.pos - actor.pos))
+        body.ETot = body.KE + body.PE
+        if body.ETot > body.EMax:
+            body.v = body.v - (sqrt(2*(body.ETot - body.EMax)/body.m) * norm(body.v)
+
+def oscilate(bodes, forces, joints):
+    for body in bodies:
+        if body.oscilator != vector(0,0,0):
+            body.oscillator = body.amplitude * body.oscvector * sin(t*body.freq*2*pi)
+            body.pos = body.oscilator
+
+#List of all modules used. Any module not included on this list will not be included in calculations
+modules = [gravity,jointmod,energyConserv]
+initialization = [energyInit]
+
+def startup(bodies = bodies, forces = forces, joints = joints, initialization = initialization):
+    for module in initialization:
+        module(bodies, forces, joints)
+
+#Sets up start conditions and maxes
+startup()
 
 #Main loop
 while True:
